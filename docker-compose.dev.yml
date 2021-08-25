@@ -1,0 +1,33 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - //e/docker/volumes/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pg@crt3l3c0m
+
+  web:
+    command: php artisan serve --host 0.0.0.0 --port 8000
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    volumes:
+      - .:/app
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_USERNAME=postgres
+      - DB_DATABASE=mk
+      - DB_PASSWORD=pg@crt3l3c0m
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    # privileged: true # Privileged mode could be required to run this container under Windows

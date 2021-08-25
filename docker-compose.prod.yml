@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - //e/docker/volumes/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pg@crt3l3c0m
+
+  webprod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    # image: 'bitnami/php-fpm:latest'
+    # command: php artisan serve --host 0.0.0.0 --port 8000
+    # command: sh -c "chmod +x /app/prod/init.sh && /app/prod/init.sh"
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_USERNAME=postgres
+      - DB_DATABASE=mk
+      - DB_PASSWORD=pg@crt3l3c0m
+    depends_on:
+      - db
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./:/var/www/html
+  nginx:
+    image: nginx:latest
+    depends_on:
+      - webprod
+    ports:
+      - '3000:3000'
+      # - '443:443'
+    volumes:
+      - ./prod/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./:/var/www/html
+    # privileged: true # Privileged mode could be required to run this container under Windows
